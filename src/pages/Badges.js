@@ -8,6 +8,7 @@ import PageLoading from '../components/PageLoading';
 import PageError from '../components/PageError';
 
 import api from '../api';
+import MiniLoader from '../components/MiniLoader';
 
 class Badges extends React.Component {
     state = {
@@ -16,17 +17,22 @@ class Badges extends React.Component {
         data: undefined
     };
 
-    componentDidMount(){
+    componentDidMount() {
         this.fetchData();
+        this.intervalId = setInterval(this.fetchData, 5000);
+    }
+
+    componentWillUnmount(){
+        clearInterval(this.intervalId);
     }
 
     fetchData = async () => {
-        this.setState({ loading: true, error: null});
+        this.setState({ loading: true, error: null });
         try {
             const data = await api.badges.list();
-            this.setState({loading: false, data: data});
+            this.setState({ loading: false, data: data });
         } catch (error) {
-            this.setState({loading: false, error: error});
+            this.setState({ loading: false, error: error });
         }
     }
 
@@ -93,11 +99,11 @@ class Badges extends React.Component {
 
     render() {
         // console.log('2/4, render()')
-        if(this.state.loading){
+        if (this.state.loading && !this.state.data) {
             return <PageLoading />
         }
-        if(this.state.error){
-            return <PageError error= {this.state.error}/>
+        if (this.state.error) {
+            return <PageError error={this.state.error} />
         }
         return (
             <React.Fragment>
@@ -116,7 +122,9 @@ class Badges extends React.Component {
                     </div>
                     <div className="Badges__list">
                         <div className="Badges__container">
+                            {this.state.loading && <MiniLoader />}
                             <BadgesList badges={this.state.data} />
+                            {this.state.loading && <MiniLoader />}
                         </div>
                     </div>
                 </div>
